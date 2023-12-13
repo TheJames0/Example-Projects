@@ -19,7 +19,7 @@ public struct TakeToCell_Contract : IContract
     public List<IHuman> remaining_candidates;
     public void initLists()
     {
-        all_candidates = new List<IHuman>();
+        all_caniddates = new List<IHuman>();
         remaining_candidates = new List<IHuman>();
     }
     public IHuman getRandomCandidate()
@@ -36,8 +36,8 @@ public class PrisonCellManager : BasicNPCManage, IManager
 {
     public List<HoldingCell> all_cells;
     public List<HoldingCell> available_cells;
-    public List<IHuman> alldclass;
-    public List<IHuman> availabledclass;
+    public List<IHuman> all_prisoners;
+    public List<IHuman> available_prisoners;
     Dictionary<string, TakeToCell_Contract> openContracts;
     protected override void doAwake()
     {
@@ -45,8 +45,8 @@ public class PrisonCellManager : BasicNPCManage, IManager
         all_cells = FindObjectsOfType<HoldingCell>().ToList();
         available_cells = all_cells;
 
-        alldclass = new List<IHuman>();
-        availabledclass = new List<IHuman>();
+        all_prisoners = new List<IHuman>();
+        available_prisoners = new List<IHuman>();
 
         openContracts = new Dictionary<string, TakeToCell_Contract>();
     }
@@ -58,25 +58,27 @@ public class PrisonCellManager : BasicNPCManage, IManager
         contract.key = Guid.NewGuid().ToString();
         contract.isContractValid = true;
         contract.initLists();
-
-        if(availabledclass.Count == 0 || available_cells.Count == 0) 
+        //Guard case back out if there are no prisoners or cells
+        if(isContractAvailable() == false)
         {
             contract.isContractValid = false;
             return contract;
         }
+        //Find the cell with the most number of prisoners required
         HoldingCell cell = available_cells.OrderBy(cell => cell.getrequiredsubjects()).FirstOrDefault();
         int accepted_count = cell.getrequiredsubjects();
-        accepted_count = Math.Clamp(accepted_count, 0, availabledclass.Count);
+        accepted_count = Math.Clamp(accepted_count, 0, available_prisoners.Count);
         accepted_count = Math.Clamp(accepted_count, 0, 2);
-        
+        //Add the prisoners
         for(int i = 0; i < accepted_count;i++)
         {
             IHuman subject = pickNextCandidate();
             contract.all_candidates.Add(subject);
             contract.remaining_candidates.Add(subject);
-            availabledclass.Remove(subject);
+            available_prisoners.Remove(subject);
             cell.current_subjects += 1;
         }
+        //Remove cell from available cells if at capacity
         if(cell.getrequiredsubjects() == 0)
         {
             available_cells.Remove(cell);
@@ -106,12 +108,12 @@ public class PrisonCellManager : BasicNPCManage, IManager
     //Pick random candidate from all available candidates
     private IHuman pickNextCandidate()
     {
-        return availabledclass.ElementAt(0);
+        return available_prisoners.ElementAt(0);
     }
     //Returns is a contract is possible
     public bool isContractAvailable()
     {
-        if (availabledclass.Count == 0 || available_cells.Count == 0)
+        if (available_prisoners.Count == 0 || available_cells.Count == 0)
         {
             return false;
         }
@@ -127,8 +129,8 @@ public class PrisonCellManager : BasicNPCManage, IManager
             return;
         }
         IHuman candidate = (IHuman)npc;
-        alldclass.Add(candidate);
-        availabledclass.Add(candidate);
+        all_prisoners.Add(candidate);
+        available_prisoners.Add(candidate);
     }
     //Event driven function which is called when a prisoner is removed from the game
     protected override void RemoveCharacter(INPC npc)
@@ -138,8 +140,8 @@ public class PrisonCellManager : BasicNPCManage, IManager
             return;
         }
             IHuman candidate = (IHuman)npc;
-            alldclass.Remove(candidate);
-            if (availabledclass.Contains(candidate)) { availabledclass.Remove(candidate); }
+            all_prisoners.Remove(candidate);
+            if (available_prisoners.Contains(candidate)) { available_prisoners.Remove(candidate); }
             foreach (KeyValuePair<string, TakeToCell_Contract> entry in openContracts)
             {
                 foreach (IHuman human in entry.Value.all_candidates)

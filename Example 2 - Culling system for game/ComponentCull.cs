@@ -83,6 +83,17 @@ public class LightCull : MonoBehaviour, ICullable
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+//Class recursively finds various components and creates the respective ICullable object to be revealed/hidden
 public class ComponentCull : MonoBehaviour
 {
     public List<ICullable> comp;
@@ -90,7 +101,7 @@ public class ComponentCull : MonoBehaviour
     private void Start()
     {
         comp = new List<ICullable>();
-        FindComps();
+        FindComponents();
 
         
     }
@@ -144,10 +155,11 @@ public class ComponentCull : MonoBehaviour
             GetComponentRecursive(child, components);
         }
     }
-    void FindComps()
+    void FindComponents()
     {
         GetComponentRecursive(transform, comp);
     }
+    //Reveal ICullable objects
     public void enableComps()
     {
         foreach (var comp in comp)
@@ -155,6 +167,7 @@ public class ComponentCull : MonoBehaviour
             comp.ToggleOn();
         }
     }
+    //Hide ICullable objects
     public void disableComps()
     {
         foreach (var comp in comp)

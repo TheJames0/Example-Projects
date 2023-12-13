@@ -86,6 +86,7 @@ public class CompCullManager : doOnceOnUpdate
         if (distanceJob.IsCompleted)
             setCullStates();
     }
+
     public void batchRaycasts(int samplers, int cullObjects)
     {
         int totalculls = 0;
@@ -126,6 +127,7 @@ public class CompCullManager : doOnceOnUpdate
         commands.Dispose();
         Debug.Log(totalculls);
     }
+
     //Multithreaded task to perform distance checks to CullSampler.
     public async Task threadDistance(int start, int stop)
     {
@@ -148,6 +150,7 @@ public class CompCullManager : doOnceOnUpdate
             await Task.Yield();
         }
     }
+
         void setCullStates()
         {
             for (int i = 0; i < cullArray.Length; i++)
@@ -162,6 +165,7 @@ public class CompCullManager : doOnceOnUpdate
                 }
             }
         }
+        //Assign threads to perform distance checks to CullSampler.
         async void assignThreads()
         {
             int threads = 10;

@@ -6,4 +6,7 @@ using UnityEngine;
 public interface IManager 
 {
     public IContract getOpenContract(string key);
+    //Todo Add contract
+    //Todo Remove contract
+
 }

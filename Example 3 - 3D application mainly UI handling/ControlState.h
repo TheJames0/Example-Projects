@@ -3,6 +3,8 @@
 #include "../GameObject.hpp"
 #include <functional>
 #include <unordered_map>
+#include <iostream>
+#include <stdexcept>
 namespace Compressa
 {
 
@@ -11,32 +13,46 @@ namespace Compressa
     {
         std::unordered_map<std::string, std::pair<bool, std::function<void()>>> variables;
         ;
+        // return the state of a variable with the given key
         bool getVariable(const std::string &name) const
         {
-            auto it = variables.find(name);
-            if (it != variables.end())
+            for (auto &[key, pair] : variables)
             {
-                return it->second.first;
+                if (key == name)
+                {
+                    auto &[boolValue, callbackValue] = pair;
+                    return boolValue;
+                }
             }
+            std::cerr << "Variable not found: " << &name << std::endl;
             return false; // Default value if variable not found
         }
 
         void setVariable(const std::string &name, bool value)
         {
-            auto it = variables.find(name);
-            if (it != variables.end())
+            for (auto &[key, pair] : variables)
             {
-                it->second.first = value;
-                if (value && it->second.second)
+                if (key == name)
                 {
-                    it->second.second();
+                    auto &[boolValue, callbackValue] = pair;
+                    boolValue = value;
+                    return;
                 }
             }
+            std::cerr << "Variable not found: " << name << std::endl;
         }
-
+        // Set a callback function for a Ui 'Event
         void setCallback(const std::string &name, std::function<void()> callback)
         {
-            variables[name].second = callback;
+            for (auto &[key, pair] : variables)
+            {
+                if (key == name)
+                {
+                    auto &[boolValue, callbackValue] = pair;
+                    callbackValue = callback;
+                    return;
+                }
+            }
         }
         ControlState()
         {
@@ -51,16 +67,18 @@ namespace Compressa
             variables["Load_ObjFile"] = {false, nullptr};
             variables["SelectedObject"] = {false, nullptr};
         }
+        // Call all the callbacks methods that are set to true
         void doCallbacks()
         {
-            for (auto &variable : variables)
+
+            for (auto &[key, pair] : variables)
             {
-                if (variable.second.first && variable.second.second)
+                auto &[boolValue, callbackValue] = pair;
+                if (boolValue && callbackValue)
                 {
-                    variable.second.second();
+                    callbackValue();
                 }
             }
         }
     };
-
-}
+} // namespace Compressa

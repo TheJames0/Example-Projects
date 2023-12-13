@@ -82,7 +82,8 @@ namespace Compressa
                              {
                               try{uiSetup.runSelectedObjectPanel(); } catch(std::exception e){std::cout << "Error: " << e.what() << std::endl;} });
   }
-  // Run the application
+
+    // Run the application
   void Application::run()
   {
     UISetup uiSetup = UISetup(window, device, renderer.getSwapChainRenderPass(), renderer.getImageCount(), controlState, gameObjects);
